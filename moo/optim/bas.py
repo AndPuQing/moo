@@ -3,8 +3,6 @@ from typing import Callable
 import torch
 from torch import optim
 
-M = 10
-
 
 class Bas(optim.Optimizer):
     def __init__(
@@ -49,19 +47,3 @@ class Bas(optim.Optimizer):
 
                 state["lr"] = lr * eta
                 p.data = x
-
-
-# if __name__ == "__main__":
-#     x = torch.rand(10)
-
-#     optimizer = Bas([x])
-#     for i in range(1000):
-
-#         def closure(x=x):
-#             i = torch.arange(1, len(x) + 1)
-#             temp1 = torch.sin(x) * torch.sin(i * x**2 / torch.pi) ** (2 * M)
-#             return -torch.sum(temp1)
-
-#         optimizer.step(closure)
-#         print(f"step {i}: {closure(x)}")
-#     print(x)
