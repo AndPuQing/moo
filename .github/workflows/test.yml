@@ -36,6 +36,8 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root --with dev
+      - name: Install moo
+        run: poetry install
       - name: Run tests with pytest
         run: |
           poetry run pytest --cov=./ --cov-report=xml
