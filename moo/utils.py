@@ -25,9 +25,10 @@ class Dominator:
             matrix: shape: (pop_size, pop_size)
             matrix[i, j] = True if solution i dominates solution j
         """
-        matrix = (values.unsqueeze(0) <= values.unsqueeze(1)).bool() | (
-            values.unsqueeze(0) < values.unsqueeze(1)
+        matrix = (values.unsqueeze(0) >= values.unsqueeze(1)).bool() | (
+            values.unsqueeze(0) > values.unsqueeze(1)
         ).bool()
+
         matrix = matrix.all(dim=2)
         return matrix.fill_diagonal_(False)
 
@@ -43,21 +44,20 @@ class Dominator:
 
         # Compute domination matrix
         # shape: (pop_size, pop_size)
-        dominance = Dominator.domination_matrix(values)
+        dominance = ~Dominator.domination_matrix(values)
+        index = torch.arange(pop_size, device=values.device)
         fronts = []
         while dominance.shape[0] > 0:
             # Find solutions that are not dominated
-            front = (~dominance).all(dim=1)
-            fronts.append(torch.arange(pop_size, device=values.device)[front])
+            front = ~(dominance).all(dim=1)
+
+            # Add front to list of fronts
+            fronts.append(index[~front])
 
             # Remove dominated solutions from the dominance matrix
-            dominance = dominance[~front][:, ~front]
-            pop_size = dominance.shape[0]
+            dominance = dominance[front, :][:, front]
+
+            # Remove dominated solutions from the index
+            index = index[front]
 
         return fronts
-
-
-if __name__ == '__main__':
-    values = torch.rand(40, 2)
-    values = values.to("cuda")
-    fronts = Dominator.fast_non_dominated_sort(-values)
